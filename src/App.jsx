@@ -1,51 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  LayoutDashboard, 
-  Utensils, 
-  ChefHat, 
-  Wallet, 
-  Plus, 
-  Minus,
-  Trash2, 
-  CheckCircle, 
-  Clock, 
-  ChevronRight, 
-  ChevronDown,
-  ArrowLeft,
-  Search,
-  Smartphone,
-  BarChart3,
-  ShoppingCart,
-  BookOpen,
-  RefreshCw,
-  MessageSquare,
-  Flame,
-  Send,
-  Lock,
-  PlusCircle,
-  XCircle,
-  DollarSign,
-  X,
-  TrendingUp,
-  Bike,
-  MapPin,
-  Pencil
+  LayoutDashboard, Utensils, ChefHat, Wallet, Plus, Minus, Trash2, 
+  CheckCircle, Clock, ChevronRight, ChevronDown, ArrowLeft, Search, 
+  Smartphone, BarChart3, ShoppingCart, BookOpen, RefreshCw, MessageSquare, 
+  Flame, Send, Lock, PlusCircle, XCircle, DollarSign, X, TrendingUp, Bike, MapPin, Pencil
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  setDoc, 
-  onSnapshot, 
-  updateDoc, 
-  addDoc, 
-  deleteDoc,
-  serverTimestamp
+  getFirestore, collection, doc, setDoc, onSnapshot, 
+  updateDoc, addDoc, deleteDoc, serverTimestamp
 } from 'firebase/firestore';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
-// --- CONFIGURAÇÃO FIREBASE DO SEU PROJETO ---
+
+// ============================================================================
+// 1. CONFIGURAÇÃO FIREBASE & DADOS DO MENU
+// ============================================================================
+
 const firebaseConfig = {
   apiKey: "AIzaSyC9ubZoHNEco7dJoRnjc6VVzO_l4YJ9zTU",
   authDomain: "gabriell-288a7.firebaseapp.com",
@@ -60,7 +31,45 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const appId = 'brasa-royal-prod';
 
-// --- COMPONENTES DE UI ---
+const INITIAL_MENU_DATA = [
+  { name: 'Duplo x-Tudo', price: 26.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres, presunto, bacon, ovo, queijo muçarela, cheddar e alface' },
+  { name: 'Duplo Bacon Costela', price: 26.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres de costela, tiras de bacon, queijo muçarela e alface' },
+  { name: 'Duplo Salada', price: 22.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres, queijo muçarela, alface, tomate e maionese' },
+  { name: 'Duplo Frango', price: 24.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres de frango, queijo muçarela, alface, tomate e cheddar' },
+  { name: 'Especial Brasa Royale', price: 16.00, category: 'Lanches', active: true, description: 'Receita exclusiva Brasa Royale' },
+  { name: 'x-Burguer', price: 18.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, queijo cheddar, alface, tomate e maionese' },
+  { name: 'x-Bacon', price: 14.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, tiras de bacon, queijo cheddar, cebola e alface' },
+  { name: 'x-Calabresa', price: 20.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, fatias de calabresa, queijo muçarela e alface' },
+  { name: 'x-Tudo', price: 20.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, presunto, bacon, ovo, queijo muçarela, cheddar e alface' },
+  { name: 'Duplo Calabresa', price: 24.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres, fatias de calabresa, queijo muçarela e alface' },
+  { name: 'x-Salada', price: 14.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, queijo muçarela, alface, tomate e maionese' },
+  { name: 'x-Frango', price: 18.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer de frango, queijo muçarela, alface, tomate e cheddar' },
+  { name: 'Duplo Bacon', price: 22.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres, tiras de bacon, queijo cheddar, cebola e alface' },
+  { name: 'Batata Frita Tradicional', price: 22.00, category: 'Porções', active: true, description: '350g de batata palito, acompanha molho barbecue' },
+  { name: 'Batata, Cheddar e Bacon', price: 28.00, category: 'Porções', active: true, description: '350g com tiras de bacon e cobertura cheddar' },
+  { name: 'Nuggets de Frango', price: 20.00, category: 'Porções', active: true, description: '10 unidades empanadas, acompanha molho barbecue' },
+  { name: 'Refrigerante Cola 350ml', price: 8.00, category: 'Bebidas', active: true, description: 'Lata 350ml' },
+  { name: 'Refrigerante Uva 350ml', price: 8.00, category: 'Bebidas', active: true, description: 'Lata 350ml' },
+  { name: 'Bebida Cítrica 350ml', price: 8.00, category: 'Bebidas', active: true, description: 'Lata 350ml' },
+  { name: 'Refrigerante Cola 2L', price: 18.00, category: 'Bebidas', active: true, description: 'Garrafa 2L' },
+  { name: 'Cerveja Brasa Royale 600ml', price: 15.00, category: 'Bebidas', active: true, description: 'Long neck 600ml' },
+  { name: 'Combo Fome Infinita', price: 156.00, category: 'Combos', active: true, description: '4 Duplos x-Tudo, 800g de fritas cheddar/bacon e 1 refri 2L' },
+  { name: 'Combo Família', price: 170.00, category: 'Combos', active: true, description: '6 x-Burguers, 800g de fritas cheddar/bacon e 2 refris 2L' },
+  { name: 'Combo Fome por 2', price: 65.00, category: 'Combos', active: true, description: '2 x-Burguers, 650g de fritas cheddar/bacon e 1 refri 2L' },
+  { name: 'Combo Galera', price: 120.00, category: 'Combos', active: true, description: '4 x-Burguers, 1 porção de 30 nuggets e 1 refri 2L' },
+  { name: 'Combo Família 2', price: 190.00, category: 'Combos', active: true, description: '6 x-Tudo, 800g de fritas cheddar/bacon e 2 refris 2L' },
+  { name: 'Combo Brasa Royale', price: 205.00, category: 'Combos', active: true, description: '5 Especial Brasa Royal, 800g de fritas cheddar/bacon e 2 refris 2L' },
+  { name: 'Caipirinha', price: 15.00, category: 'Drinques', active: true, description: 'Cachaça e suco de limão' },
+  { name: 'Mojito', price: 20.00, category: 'Drinques', active: true, description: 'Rum, água com gás, suco de limão e hortelã' },
+  { name: 'Piña Colada', price: 20.00, category: 'Drinques', active: true, description: 'Rum, leite de coco e suco de abacaxi' },
+  { name: 'Cosmopolitan', price: 22.00, category: 'Drinques', active: true, description: 'Suco de limão, cranberry, licor de laranja e vodca' },
+  { name: 'Bloody Mary', price: 25.00, category: 'Drinques', active: true, description: 'Vodca, tomate, limão, molho inglês e pimenta' }
+];
+
+
+// ============================================================================
+// 2. COMPONENTES DE UI REUTILIZÁVEIS
+// ============================================================================
 
 const Card = ({ children, className = "" }) => (
   <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden ${className}`}>
@@ -119,16 +128,16 @@ const MenuCard = ({ onClick, icon, title, sub }) => (
   </button>
 );
 
-// --- COMPONENTES DE TELA EXTERNOS ---
+
+// ============================================================================
+// 3. ECRÃS PRINCIPAIS DA APLICAÇÃO
+// ============================================================================
 
 const HomeView = ({ setCurrentView, setSelectedTable, setSelectedDelivery, setIsAuthorized, createInitialData, tableCountToCreate, setTableCountToCreate, tables, hasOccupiedTables, isGenerating }) => (
   <div className="p-6 space-y-8 animate-in fade-in duration-500">
     <div className="flex flex-col items-center pt-6 pb-2">
-      {/* Container da Logo ajustado para a imagem "Brasa Royale" */}
       <div className="w-48 h-48 rounded-full border-4 border-slate-900 shadow-2xl overflow-hidden mb-2 flex items-center justify-center bg-black relative">
-        {/* A imagem logo.jpg que colar na pasta public aparecerá aqui */}
         <img src="/logo.jpg" alt="Brasa Royale" className="w-full h-full object-cover scale-[1.4] relative z-10" onError={(e) => { e.target.style.display = 'none'; }} />
-        {/* Fallback caso a imagem não carregue */}
         <div className="absolute inset-0 flex flex-col items-center justify-center z-0">
           <Flame className="text-orange-500 w-16 h-16 animate-pulse" />
         </div>
@@ -514,7 +523,7 @@ const OrderEntryView = ({ selectedTable, selectedDelivery, activeOrder, products
   const [searchTerm, setSearchTerm] = useState('');
   const [isCartExpanded, setIsCartExpanded] = useState(false);
 
-  // Monitoriza quando o carrinho esvazia para fechá-lo de forma segura sem gerar erro de renderização do React
+  // Monitorização estável para fecho automático do carrinho
   useEffect(() => {
     if (cart.length === 0 && isCartExpanded) {
       setIsCartExpanded(false);
@@ -592,12 +601,10 @@ const OrderEntryView = ({ selectedTable, selectedDelivery, activeOrder, products
 
       {cart.length > 0 && (
         <>
-          {/* Fundo escuro que aparece quando o carrinho é expandido */}
           {isCartExpanded && <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-30 animate-in fade-in" onClick={() => setIsCartExpanded(false)} />}
           
           <div className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-200 shadow-[0_-15px_60px_rgba(0,0,0,0.15)] z-40 transition-all duration-300 flex flex-col rounded-t-[40px] ${isCartExpanded ? 'h-[85vh]' : 'h-auto'}`}>
             
-            {/* CABEÇALHO DO CARRINHO (CLICÁVEL) */}
             <div className="p-5 flex justify-between items-center cursor-pointer active:bg-slate-50 rounded-t-[40px]" onClick={() => setIsCartExpanded(!isCartExpanded)}>
               <div className="flex items-center gap-4">
                 <div className="relative bg-orange-100 p-3 rounded-2xl">
@@ -607,7 +614,7 @@ const OrderEntryView = ({ selectedTable, selectedDelivery, activeOrder, products
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total do Pedido</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Carrinho</span>
                   <span className="font-black text-2xl text-orange-600 tracking-tighter leading-none">
                     R$ {cart.reduce((a,b)=>a+((Number(b.price)||0)*(Number(b.qty)||0)),0).toFixed(2)}
                   </span>
@@ -615,36 +622,35 @@ const OrderEntryView = ({ selectedTable, selectedDelivery, activeOrder, products
               </div>
               <div className="flex items-center gap-2">
                 {!isCartExpanded ? (
-                  <span className="bg-slate-100 text-slate-600 font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl">Ver Itens</span>
+                  <span className="bg-slate-100 text-slate-600 font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl">Revisar</span>
                 ) : (
                   <button className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors"><ChevronDown className="w-5 h-5"/></button>
                 )}
               </div>
             </div>
 
-            {/* CONTEÚDO EXPANDIDO DO CARRINHO */}
             {isCartExpanded && (
               <div className="flex-1 overflow-y-auto px-6 pb-6 flex flex-col animate-in slide-in-from-bottom-8">
                 <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hide mb-6">
                   {cart.map(i => (
-                    <div key={i.id} className="bg-slate-50 p-4 rounded-3xl border border-slate-100 shadow-sm animate-in zoom-in">
+                    <div key={i.id} className="bg-slate-50 p-4 rounded-3xl border border-slate-100 shadow-sm">
                       <div className="flex justify-between items-center mb-3">
                         <span className="text-sm font-black text-slate-800">{String(i.name || '')}</span>
                         <div className="flex items-center gap-4">
-                          <button onClick={(e) => { e.stopPropagation(); handleRemoveFromCart(i.id); }} className="p-2 bg-white rounded-xl border border-red-100 text-red-500 shadow-sm active:scale-90"><Minus className="w-3 h-3"/></button>
+                          <button onClick={(e) => { e.stopPropagation(); handleRemoveFromCart(i.id); }} className="p-2 bg-white rounded-xl border border-red-100 text-red-500 active:scale-90"><Minus className="w-3 h-3"/></button>
                           <span className="text-sm font-black text-slate-800">{i.qty}</span>
-                          <button onClick={(e) => { e.stopPropagation(); handleAddToCart(i); }} className="p-2 bg-white rounded-xl border border-emerald-100 text-emerald-500 shadow-sm active:scale-90"><Plus className="w-3 h-3"/></button>
+                          <button onClick={(e) => { e.stopPropagation(); handleAddToCart(i); }} className="p-2 bg-white rounded-xl border border-emerald-100 text-emerald-500 active:scale-90"><Plus className="w-3 h-3"/></button>
                         </div>
                       </div>
                       <div className="relative">
                         <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                        <input type="text" placeholder="Observações (ex: sem cebola)..." value={i.obs} onChange={(e) => handleUpdateObs(i.id, e.target.value)} className="w-full bg-white text-slate-700 placeholder-slate-400 border border-slate-100 rounded-2xl py-3 pl-10 pr-4 text-[11px] outline-none focus:border-orange-300 focus:ring-2 focus:ring-orange-100 transition-colors" />
+                        <input type="text" placeholder="Observações..." value={i.obs} onChange={(e) => handleUpdateObs(i.id, e.target.value)} className="w-full bg-white text-slate-700 placeholder-slate-400 border border-slate-100 rounded-2xl py-3 pl-10 pr-4 text-[11px] outline-none focus:border-orange-300" />
                       </div>
                     </div>
                   ))}
                 </div>
-                <Button onClick={() => { setIsCartExpanded(false); if (selectedTable || selectedDelivery) onFinalize(selectedTable, selectedDelivery); else onOpenTableSelector(); }} className="w-full py-5 text-lg uppercase shadow-xl shadow-orange-500/30 mt-auto">
-                  <Send className="w-5 h-5 mr-2" /> {selectedTable ? `Lançar Mesa ${selectedTable.number}` : selectedDelivery ? `Lançar Entrega` : 'Confirmar e Escolher'}
+                <Button onClick={() => { setIsCartExpanded(false); if (selectedTable || selectedDelivery) onFinalize(selectedTable, selectedDelivery); else onOpenTableSelector(); }} className="w-full py-5 text-lg uppercase shadow-xl shadow-orange-500/30">
+                  <Send className="w-5 h-5 mr-2" /> {selectedTable ? `Lançar Mesa ${selectedTable.number}` : selectedDelivery ? `Lançar Delivery` : 'Finalizar'}
                 </Button>
               </div>
             )}
@@ -736,49 +742,17 @@ const ReportsView = ({ orders, onBack }) => {
             <span className="font-black text-orange-600 bg-orange-50 border border-orange-100 px-4 py-2 rounded-2xl shadow-inner">R$ {item.revenue.toFixed(2)}</span>
           </div>
         ))}
-        {popularItems.length === 0 && <p className="text-center py-8 text-slate-400 text-[10px] uppercase font-bold tracking-widest border border-dashed border-slate-200 rounded-3xl">Nenhuma saída no período.</p>}
-      </div>
-
-      <div className="space-y-3 pb-8">
-        <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-5 px-1 flex items-center gap-2"><Clock className="w-3 h-3 text-orange-500"/> Histórico de Comandas</h4>
-        {filteredOrders.sort((a,b) => {
-          const timeA = a.closedAt?.seconds || 0;
-          const timeB = b.closedAt?.seconds || 0;
-          return timeB - timeA;
-        }).slice(0, 10).map((o, idx) => {
-          const pMethod = typeof o.paymentMethod === 'string' ? o.paymentMethod : 'PAGAMENTO';
-          let timeStr = '--';
-          if (o.closedAt && o.closedAt.seconds) {
-            timeStr = new Date(o.closedAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          }
-          return (
-            <div key={idx} className="bg-white p-5 rounded-[32px] border border-slate-100 flex justify-between items-center shadow-sm animate-in slide-in-from-right">
-              <div><p className="font-black text-slate-800 text-sm">{o.orderType === 'delivery' ? `Delivery: ${String(o.customerName || '')}` : `Mesa ${String(o.tableNumber || '')}`}</p><p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{pMethod} • {timeStr}</p></div>
-              <span className="font-black text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-2xl shadow-inner">R$ {Number(o.total || 0).toFixed(2)}</span>
-            </div>
-          );
-        })}
-        {filteredOrders.length === 0 && <p className="text-center py-8 text-slate-400 text-[10px] uppercase font-bold tracking-widest border border-dashed border-slate-200 rounded-3xl">Nenhuma comanda fechada.</p>}
       </div>
     </div>
   );
 };
 
 const BillView = ({ selectedTable, selectedDelivery, activeOrder, onBack, onPayment }) => {
-  if ((!selectedTable && !selectedDelivery) || !activeOrder) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center animate-in fade-in bg-slate-50">
-        <Wallet className="w-16 h-16 text-slate-300 mb-4" />
-        <h2 className="text-2xl font-black text-slate-800 mb-2">Conta Inativa</h2>
-        <p className="text-sm text-slate-500 mb-8 font-bold">Não possui pedidos ativos no momento.</p>
-        <Button onClick={onBack} className="w-full py-5">Voltar</Button>
-      </div>
-    );
-  }
+  if ((!selectedTable && !selectedDelivery) || !activeOrder) return null;
   
   return (
     <div className="p-6 pb-32 animate-in fade-in bg-slate-50 min-h-screen">
-      <div className="flex items-center gap-4 mb-8"><button onClick={onBack} className="p-2 -ml-2"><ArrowLeft className="w-6 h-6 text-slate-500"/></button><h2 className="text-2xl font-black text-slate-800">{selectedTable ? `Fechar Mesa ${selectedTable.number}` : `Fechar Delivery: ${String(selectedDelivery.name || '').split(' ')[0]}`}</h2></div>
+      <div className="flex items-center gap-4 mb-8"><button onClick={onBack} className="p-2 -ml-2 text-slate-500"><ArrowLeft className="w-6 h-6"/></button><h2 className="text-2xl font-black text-slate-800">{selectedTable ? `Mesa ${selectedTable.number}` : `Delivery`}</h2></div>
       
       <Card className="p-8 mb-8 border-dashed border-2 border-slate-200 bg-white relative shadow-xl">
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-orange-600"></div>
@@ -804,25 +778,28 @@ const BillView = ({ selectedTable, selectedDelivery, activeOrder, onBack, onPaym
       </Card>
       
       <div className="space-y-3 mb-10">
-        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 px-2">Selecionar Método de Pagamento</p>
-        <button onClick={() => onPayment('Cartão')} className="w-full bg-white border border-slate-200 p-4 rounded-[24px] flex items-center gap-4 active:scale-95 shadow-sm hover:border-blue-300 transition-colors group">
-          <div className="bg-blue-50 p-4 rounded-2xl group-hover:bg-blue-100 transition-colors"><Wallet className="w-6 h-6 text-blue-600" /></div>
-          <span className="font-black uppercase tracking-widest text-slate-700 text-sm">Cartão (Crédito / Débito)</span>
+        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 px-2">Pagamento</p>
+        <button onClick={() => onPayment('Cartão')} className="w-full bg-white border border-slate-200 p-4 rounded-[24px] flex items-center gap-4 active:scale-95 shadow-sm group">
+          <div className="bg-blue-50 p-4 rounded-2xl"><Wallet className="w-6 h-6 text-blue-600" /></div>
+          <span className="font-black uppercase tracking-widest text-slate-700 text-sm">Cartão</span>
         </button>
-        <button onClick={() => onPayment('PIX')} className="w-full bg-white border border-slate-200 p-4 rounded-[24px] flex items-center gap-4 active:scale-95 shadow-sm hover:border-emerald-300 transition-colors group">
-          <div className="bg-emerald-50 p-4 rounded-2xl group-hover:bg-emerald-100 transition-colors"><Smartphone className="w-6 h-6 text-emerald-600" /></div>
-          <span className="font-black uppercase tracking-widest text-slate-700 text-sm">PIX Transferência</span>
+        <button onClick={() => onPayment('PIX')} className="w-full bg-white border border-slate-200 p-4 rounded-[24px] flex items-center gap-4 active:scale-95 shadow-sm group">
+          <div className="bg-emerald-50 p-4 rounded-2xl"><Smartphone className="w-6 h-6 text-emerald-600" /></div>
+          <span className="font-black uppercase tracking-widest text-slate-700 text-sm">PIX</span>
         </button>
-        <button onClick={() => onPayment('Dinheiro')} className="w-full bg-white border border-slate-200 p-4 rounded-[24px] flex items-center gap-4 active:scale-95 shadow-sm hover:border-orange-300 transition-colors group">
-          <div className="bg-orange-50 p-4 rounded-2xl group-hover:bg-orange-100 transition-colors"><DollarSign className="w-6 h-6 text-orange-600" /></div>
-          <span className="font-black uppercase tracking-widest text-slate-700 text-sm">Dinheiro (Espécie)</span>
+        <button onClick={() => onPayment('Dinheiro')} className="w-full bg-white border border-slate-200 p-4 rounded-[24px] flex items-center gap-4 active:scale-95 shadow-sm group">
+          <div className="bg-orange-50 p-4 rounded-2xl"><DollarSign className="w-6 h-6 text-orange-600" /></div>
+          <span className="font-black uppercase tracking-widest text-slate-700 text-sm">Dinheiro</span>
         </button>
       </div>
     </div>
   );
 };
 
-// --- APP PRINCIPAL ---
+
+// ============================================================================
+// 4. APLICAÇÃO PRINCIPAL (ESTADOS E LOGICA)
+// ============================================================================
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -840,151 +817,62 @@ export default function App() {
   const [globalError, setGlobalError] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // 1. Autenticação Global
+  // Inicialização Auth
   useEffect(() => {
     const initAuth = async () => {
       try {
         await signInAnonymously(auth);
       } catch (error) { 
-        console.warn("Firebase Auth falhou.", error); 
-        setGlobalError("Bloqueio de Auth: Vá ao site do Firebase > Authentication > Sign-in method e ative o 'Anónimo'.");
+        setGlobalError("Bloqueio de Auth: Verifique o método 'Anónimo' no Firebase.");
         setUser({ uid: 'offline-user', isAnonymous: true });
       } finally { 
         setIsInitialLoading(false); 
       }
     };
-    
     initAuth();
-    
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-      }
-    });
-    
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => { if (firebaseUser) setUser(firebaseUser); });
     return () => unsubscribe();
   }, []);
 
-  // 2. Listeners Sincronizados
+  // Listeners Firebase
   useEffect(() => {
     if (!user) return;
-
-    const handleError = (error) => {
-      console.error(error);
-      setGlobalError(`Bloqueio de Base de Dados: Vá ao Firestore > Regras e altere para 'allow read, write: if true;'.`);
-    };
-
-    const unsubTables = onSnapshot(
-      collection(db, 'artifacts', appId, 'public', 'data', 'tables'), 
-      (snap) => {
-        setTables(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => a.number - b.number));
-      },
-      handleError
-    );
-
-    const unsubProducts = onSnapshot(
-      collection(db, 'artifacts', appId, 'public', 'data', 'products'),
-      (snap) => {
-        setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      },
-      handleError
-    );
-
-    const unsubOrders = onSnapshot(
-      collection(db, 'artifacts', appId, 'public', 'data', 'orders'),
-      (snap) => {
-        setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      },
-      handleError
-    );
-
+    const handleError = (error) => { console.error(error); setGlobalError(`Erro de conexão com o banco de dados.`); };
+    const unsubTables = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'tables'), (snap) => {
+      setTables(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => a.number - b.number));
+    }, handleError);
+    const unsubProducts = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), (snap) => {
+      setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, handleError);
+    const unsubOrders = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), (snap) => {
+      setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, handleError);
     return () => { unsubTables(); unsubProducts(); unsubOrders(); };
   }, [user]);
 
-  // Derived States
+  // Estado Derivado do Pedido Ativo
   const activeOrder = useMemo(() => {
-    if (selectedTable?.currentOrderId) {
-      return orders.find(o => o.id === selectedTable.currentOrderId && o.status === 'open');
-    }
-    if (selectedDelivery && !selectedDelivery.isNew) {
-      return orders.find(o => o.id === selectedDelivery.id && o.status === 'open');
-    }
+    if (selectedTable?.currentOrderId) return orders.find(o => o.id === selectedTable.currentOrderId && o.status === 'open');
+    if (selectedDelivery && !selectedDelivery.isNew) return orders.find(o => o.id === selectedDelivery.id && o.status === 'open');
     return null;
   }, [selectedTable, selectedDelivery, orders]);
 
   // Funções Globais
   const createInitialData = async (count = 5) => {
-    if (!user || user.uid === 'offline-user') {
-      setGlobalError("O Firebase não está ligado. Verifique a Autenticação no Firebase Console.");
-      return;
-    }
-    
-    const hasOccupied = tables.some(t => t.status === 'occupied');
-    if (hasOccupied) return;
-
-    setIsGenerating(true);
-    setGlobalError('');
-
+    if (!user) return;
+    if (tables.some(t => t.status === 'occupied')) return;
+    setIsGenerating(true); setGlobalError('');
     try {
       const deletePromises = tables.map(t => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tables', t.id)));
       await Promise.all(deletePromises);
-
-      const tablePromises = [];
       for (let i = 1; i <= count; i++) {
-        tablePromises.push(setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tables', `table-${i}`), { number: i, status: 'free', currentOrderId: null }));
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tables', `table-${i}`), { number: i, status: 'free', currentOrderId: null });
       }
-      await Promise.all(tablePromises);
-
       if (products.length === 0) {
-        const menuData = [
-          { name: 'Duplo x-Tudo', price: 26.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres, presunto, bacon, ovo, queijo muçarela, cheddar e alface' },
-          { name: 'Duplo Bacon Costela', price: 26.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres de costela, tiras de bacon, queijo muçarela e alface' },
-          { name: 'Duplo Salada', price: 22.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres, queijo muçarela, alface, tomate e maionese' },
-          { name: 'Duplo Frango', price: 24.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres de frango, queijo muçarela, alface, tomate e cheddar' },
-          { name: 'Especial Brasa Royale', price: 16.00, category: 'Lanches', active: true, description: 'Receita exclusiva Brasa Royal' },
-          { name: 'x-Burguer', price: 18.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, queijo cheddar, alface, tomate e maionese' },
-          { name: 'x-Bacon', price: 14.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, tiras de bacon, queijo cheddar, cebola e alface' },
-          { name: 'x-Calabresa', price: 20.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, fatias de calabresa, queijo muçarela e alface' },
-          { name: 'x-Tudo', price: 20.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, presunto, bacon, ovo, queijo muçarela, cheddar e alface' },
-          { name: 'Duplo Calabresa', price: 24.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres, fatias de calabresa, queijo muçarela e alface' },
-          { name: 'x-Salada', price: 14.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer, queijo muçarela, alface, tomate e maionese' },
-          { name: 'x-Frango', price: 18.00, category: 'Lanches', active: true, description: 'Pão de brioche, hambúrguer de frango, queijo muçarela, alface, tomate e cheddar' },
-          { name: 'Duplo Bacon', price: 22.00, category: 'Lanches', active: true, description: 'Pão de brioche, 2 hambúrgueres, tiras de bacon, queijo cheddar, cebola e alface' },
-          
-          { name: 'Batata Frita Tradicional', price: 22.00, category: 'Porções', active: true, description: '350g de batata palito, acompanha molho barbecue' },
-          { name: 'Batata, Cheddar e Bacon', price: 28.00, category: 'Porções', active: true, description: '350g com tiras de bacon e cobertura cheddar' },
-          { name: 'Nuggets de Frango', price: 20.00, category: 'Porções', active: true, description: '10 unidades empanadas, acompanha molho barbecue' },
-          
-          { name: 'Refrigerante Cola 350ml', price: 8.00, category: 'Bebidas', active: true, description: 'Lata 350ml' },
-          { name: 'Refrigerante Uva 350ml', price: 8.00, category: 'Bebidas', active: true, description: 'Lata 350ml' },
-          { name: 'Bebida Cítrica 350ml', price: 8.00, category: 'Bebidas', active: true, description: 'Lata 350ml' },
-          { name: 'Refrigerante Cola 2L', price: 18.00, category: 'Bebidas', active: true, description: 'Garrafa 2L' },
-          { name: 'Cerveja Brasa Royale 600ml', price: 15.00, category: 'Bebidas', active: true, description: 'Long neck 600ml' },
-          
-          { name: 'Combo Fome Infinita', price: 156.00, category: 'Combos', active: true, description: '4 Duplos x-Tudo, 800g de fritas cheddar/bacon e 1 refri 2L' },
-          { name: 'Combo Família', price: 170.00, category: 'Combos', active: true, description: '6 x-Burguers, 800g de fritas cheddar/bacon e 2 refris 2L' },
-          { name: 'Combo Fome por 2', price: 65.00, category: 'Combos', active: true, description: '2 x-Burguers, 650g de fritas cheddar/bacon e 1 refri 2L' },
-          { name: 'Combo Galera', price: 120.00, category: 'Combos', active: true, description: '4 x-Burguers, 1 porção de 30 nuggets e 1 refri 2L' },
-          { name: 'Combo Família 2', price: 190.00, category: 'Combos', active: true, description: '6 x-Tudo, 800g de fritas cheddar/bacon e 2 refris 2L' },
-          { name: 'Combo Brasa Royale', price: 205.00, category: 'Combos', active: true, description: '5 Especial Brasa Royal, 800g de fritas cheddar/bacon e 2 refris 2L' },
-          
-          { name: 'Caipirinha', price: 15.00, category: 'Drinques', active: true, description: 'Cachaça e suco de limão' },
-          { name: 'Mojito', price: 20.00, category: 'Drinques', active: true, description: 'Rum, água com gás, suco de limão e hortelã' },
-          { name: 'Piña Colada', price: 20.00, category: 'Drinques', active: true, description: 'Rum, leite de coco e suco de abacaxi' },
-          { name: 'Cosmopolitan', price: 22.00, category: 'Drinques', active: true, description: 'Suco de limão, cranberry, licor de laranja e vodca' },
-          { name: 'Bloody Mary', price: 25.00, category: 'Drinques', active: true, description: 'Vodca, tomate, limão, molho inglês e pimenta' },
-        ];
-        
-        for (const p of menuData) {
-          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), p);
-        }
+        for (const p of INITIAL_MENU_DATA) await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), p);
       }
-    } catch (e) { 
-      console.error(e);
-      setGlobalError(`Falha ao gravar no Firebase. Detalhe: ${e.message}`);
-    } finally {
-      setIsGenerating(false);
-    }
+    } catch (e) { setGlobalError(`Falha ao gravar dados no Firebase.`); }
+    finally { setIsGenerating(false); }
   };
 
   const finalizeOrderOnTable = async (targetTable, targetDelivery) => {
@@ -992,125 +880,83 @@ export default function App() {
     try {
       const itemsToAdd = cart.map(item => ({ ...item, status: 'pending', createdAt: Date.now() }));
       const totalCart = cart.reduce((acc, curr) => acc + ((Number(curr.price)||0) * (Number(curr.qty)||1)), 0);
-
       if (targetDelivery) {
         if (targetDelivery.isNew) {
-          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), {
-            orderType: 'delivery',
-            customerName: targetDelivery.name,
-            customerAddress: targetDelivery.address,
-            status: 'open',
-            items: itemsToAdd,
-            total: totalCart, 
-            createdAt: serverTimestamp()
-          });
+          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), { orderType: 'delivery', customerName: targetDelivery.name, customerAddress: targetDelivery.address, status: 'open', items: itemsToAdd, total: totalCart, createdAt: serverTimestamp() });
         } else {
            const order = orders.find(o => o.id === targetDelivery.id);
            const updatedItems = [...(order.items || []), ...itemsToAdd];
-           await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', targetDelivery.id), { 
-             items: updatedItems, 
-             total: updatedItems.reduce((acc, curr) => acc + ((Number(curr.price)||0) * (Number(curr.qty)||1)), 0) 
-           });
+           await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', targetDelivery.id), { items: updatedItems, total: updatedItems.reduce((acc, curr) => acc + ((Number(curr.price)||0) * (Number(curr.qty)||1)), 0) });
         }
-        setCart([]); setIsSelectingTableForQuickOrder(false); setSelectedDelivery(null); setCurrentView('delivery');
-        return;
-      }
-
-      if (targetTable) {
+        setCart([]); setSelectedDelivery(null); setCurrentView('delivery');
+      } else if (targetTable) {
         let orderId = targetTable.currentOrderId;
         if (!orderId) {
-          const orderRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), {
-            tableId: targetTable.id, tableNumber: targetTable.number, status: 'open', items: itemsToAdd,
-            total: totalCart, createdAt: serverTimestamp()
-          });
+          const orderRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), { tableId: targetTable.id, tableNumber: targetTable.number, status: 'open', items: itemsToAdd, total: totalCart, createdAt: serverTimestamp() });
           await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tables', targetTable.id), { status: 'occupied', currentOrderId: orderRef.id });
         } else {
           const order = orders.find(o => o.id === orderId);
           const updatedItems = [...(order.items || []), ...itemsToAdd];
-          await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId), { 
-            items: updatedItems, 
-            total: updatedItems.reduce((acc, curr) => acc + ((Number(curr.price)||0) * (Number(curr.qty)||1)), 0) 
-          });
+          await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId), { items: updatedItems, total: updatedItems.reduce((acc, curr) => acc + ((Number(curr.price)||0) * (Number(curr.qty)||1)), 0) });
         }
-        setCart([]); setIsSelectingTableForQuickOrder(false); setSelectedTable(null); setCurrentView('tables');
+        setCart([]); setSelectedTable(null); setCurrentView('tables');
       }
-    } catch (error) { console.error(error); }
-  };
-
-  const deleteTableItem = async (orderId, idx) => {
-    const order = orders.find(o => o.id === orderId);
-    if (!order || !order.items) return;
-    const newItems = order.items.filter((_, i) => i !== idx);
-    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId), { 
-      items: newItems, 
-      total: newItems.reduce((acc, curr) => acc + ((Number(curr.price)||0) * (Number(curr.qty)||1)), 0) 
-    });
+    } catch (e) { console.error(e); }
   };
 
   const handlePayment = async (method) => {
     if (!activeOrder) return;
     try {
       await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', activeOrder.id), { status: 'closed', paymentMethod: method, closedAt: serverTimestamp() });
-      
       if (selectedTable) {
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tables', selectedTable.id), { status: 'free', currentOrderId: null });
-        setSelectedTable(null);
-        setCurrentView('tables');
+        setSelectedTable(null); setCurrentView('tables');
       } else if (selectedDelivery) {
-        setSelectedDelivery(null);
-        setCurrentView('delivery');
+        setSelectedDelivery(null); setCurrentView('delivery');
       }
-    } catch(e) {
-      setGlobalError("Erro ao tentar fechar a conta: " + e.message);
-    }
+    } catch(e) { setGlobalError("Erro ao fechar conta."); }
   };
 
   const renderView = () => {
-    const hasOccupiedTables = tables.some(t => t.status === 'occupied');
-
     switch(currentView) {
-      case 'home': return <HomeView setCurrentView={setCurrentView} setSelectedTable={setSelectedTable} setSelectedDelivery={setSelectedDelivery} setIsAuthorized={setIsAuthorized} createInitialData={createInitialData} tableCountToCreate={tableCountToCreate} setTableCountToCreate={setTableCountToCreate} tables={tables} hasOccupiedTables={hasOccupiedTables} isGenerating={isGenerating} />;
+      case 'home': return <HomeView setCurrentView={setCurrentView} setSelectedTable={setSelectedTable} setSelectedDelivery={setSelectedDelivery} setIsAuthorized={setIsAuthorized} createInitialData={createInitialData} tableCountToCreate={tableCountToCreate} setTableCountToCreate={setTableCountToCreate} tables={tables} hasOccupiedTables={tables.some(t => t.status === 'occupied')} isGenerating={isGenerating} />;
       case 'tables': return <TablesView tables={tables} onSelectTable={(t) => { setSelectedTable(t); setSelectedDelivery(null); setCurrentView('order_entry'); }} onBack={() => setCurrentView('home')} onRestore={createInitialData} tableCountToCreate={tableCountToCreate} setTableCountToCreate={setTableCountToCreate} isGenerating={isGenerating} />;
       case 'delivery': return <DeliveryView orders={orders} onNewDelivery={(c) => { setSelectedDelivery(c); setSelectedTable(null); setCurrentView('order_entry'); }} onOpenDelivery={(d) => { setSelectedDelivery(d); setSelectedTable(null); setCurrentView('order_entry'); }} onBack={() => setCurrentView('home')} />;
-      case 'order_entry': return <OrderEntryView selectedTable={selectedTable} selectedDelivery={selectedDelivery} activeOrder={activeOrder} products={products} cart={cart} setCart={setCart} onBack={() => { if (selectedTable) setCurrentView('tables'); else if (selectedDelivery) setCurrentView('delivery'); else setCurrentView('home'); setCart([]); setSelectedTable(null); setSelectedDelivery(null); }} onFinalize={finalizeOrderOnTable} onDeleteTableItem={deleteTableItem} onOpenTableSelector={() => setIsSelectingTableForQuickOrder(true)} onBill={() => setCurrentView('bill')} />;
-      case 'kitchen': return <KitchenView orders={orders} onBack={() => setCurrentView('home')} onUpdateStatus={async (oId, idx, next) => { const order = orders.find(o => o.id === oId); if (!order || !order.items) return; const newItems = [...order.items]; newItems[idx].status = next; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', oId), { items: newItems }); }} />;
+      case 'order_entry': return <OrderEntryView selectedTable={selectedTable} selectedDelivery={selectedDelivery} activeOrder={activeOrder} products={products} cart={cart} setCart={setCart} onBack={() => { setCurrentView(selectedTable ? 'tables' : (selectedDelivery ? 'delivery' : 'home')); setCart([]); setSelectedTable(null); setSelectedDelivery(null); }} onFinalize={finalizeOrderOnTable} onDeleteTableItem={async (id, idx) => { const order = orders.find(o => o.id === id); const newItems = order.items.filter((_, i) => i !== idx); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', id), { items: newItems, total: newItems.reduce((acc, curr) => acc + ((Number(curr.price)||0) * (Number(curr.qty)||1)), 0) }); }} onOpenTableSelector={() => setIsSelectingTableForQuickOrder(true)} onBill={() => setCurrentView('bill')} />;
+      case 'kitchen': return <KitchenView orders={orders} onBack={() => setCurrentView('home')} onUpdateStatus={async (oId, idx, next) => { const order = orders.find(o => o.id === oId); const newItems = [...order.items]; newItems[idx].status = next; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'orders', oId), { items: newItems }); }} />;
       case 'products': return isAuthorized ? <ProductsManager products={products} onBack={() => setCurrentView('home')} onSave={(item) => addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), { ...item, price: parseFloat(item.price) })} onEdit={async (id, item) => await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), { ...item, price: parseFloat(item.price) })} onToggleActive={async (id, current) => await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), { active: !current })} onDelete={async (id) => await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id))} /> : <PasswordGate onAuthorized={() => setIsAuthorized(true)} onBack={() => setCurrentView('home')} />;
       case 'reports': return <ReportsView orders={orders} onBack={() => setCurrentView('home')} />;
       case 'bill': return <BillView selectedTable={selectedTable} selectedDelivery={selectedDelivery} activeOrder={activeOrder} onBack={() => setCurrentView('order_entry')} onPayment={handlePayment} />;
-      default: return <HomeView setCurrentView={setCurrentView} setSelectedTable={setSelectedTable} setSelectedDelivery={setSelectedDelivery} setIsAuthorized={setIsAuthorized} createInitialData={createInitialData} tableCountToCreate={tableCountToCreate} setTableCountToCreate={setTableCountToCreate} tables={tables} hasOccupiedTables={hasOccupiedTables} isGenerating={isGenerating} />;
+      default: return null;
     }
   };
 
-  if (isInitialLoading) return <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-900 animate-in fade-in duration-700"><Flame className="w-16 h-16 animate-bounce mb-4 text-orange-600" /><h1 className="text-4xl font-black tracking-tighter uppercase italic">Brasa Royale</h1><p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-4 animate-pulse">A carregar interface...</p></div>;
+  if (isInitialLoading) return <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-900"><Flame className="w-16 h-16 animate-bounce mb-4 text-orange-600" /><h1 className="text-4xl font-black tracking-tighter uppercase italic">Brasa Royale</h1></div>;
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-slate-50 shadow-2xl relative font-sans text-slate-900 overflow-x-hidden selection:bg-orange-100">
-      
       {globalError && (
-        <div className="fixed top-4 left-4 right-4 z-50 bg-red-500 text-white p-4 rounded-2xl shadow-xl flex justify-between items-center animate-in slide-in-from-top border border-red-400">
-          <span className="text-xs font-bold leading-tight flex-1 mr-4">{globalError}</span>
-          <button onClick={() => setGlobalError('')} className="p-1 bg-black/10 rounded-full active:scale-90 hover:bg-black/20"><X className="w-4 h-4"/></button>
+        <div className="fixed top-4 left-4 right-4 z-50 bg-red-500 text-white p-4 rounded-2xl shadow-xl flex justify-between items-center border border-red-400">
+          <span className="text-xs font-bold flex-1 mr-4">{globalError}</span>
+          <button onClick={() => setGlobalError('')} className="p-1 bg-black/10 rounded-full"><X className="w-4 h-4"/></button>
         </div>
       )}
-
       {renderView()}
-      
       {['home', 'tables', 'kitchen', 'reports', 'delivery', 'products'].includes(currentView) && (
         <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around p-3 pb-8 z-40 rounded-t-[40px] shadow-[0_-15px_50px_rgba(0,0,0,0.1)]">
-          <NavItem id="home" icon={<LayoutDashboard />} label="Início" currentView={currentView} onClick={() => { setCurrentView('home'); setCart([]); setSelectedTable(null); setSelectedDelivery(null); }} />
-          <NavItem id="tables" icon={<Smartphone />} label="Salão" currentView={currentView} onClick={() => { setCurrentView('tables'); setCart([]); setSelectedTable(null); setSelectedDelivery(null); }} />
-          <NavItem id="delivery" icon={<Bike />} label="Delivery" currentView={currentView} onClick={() => { setCurrentView('delivery'); setCart([]); setSelectedTable(null); setSelectedDelivery(null); }} />
-          <NavItem id="kitchen" icon={<ChefHat />} label="Brasa" currentView={currentView} onClick={() => { setCurrentView('kitchen'); setCart([]); setSelectedTable(null); setSelectedDelivery(null); }} />
-          <NavItem id="reports" icon={<BarChart3 />} label="Caixa" currentView={currentView} onClick={() => { setCurrentView('reports'); setCart([]); setSelectedTable(null); setSelectedDelivery(null); }} />
+          <NavItem id="home" icon={<LayoutDashboard />} label="Início" currentView={currentView} onClick={() => { setCurrentView('home'); setSelectedTable(null); setSelectedDelivery(null); }} />
+          <NavItem id="tables" icon={<Smartphone />} label="Salão" currentView={currentView} onClick={() => { setCurrentView('tables'); setSelectedTable(null); setSelectedDelivery(null); }} />
+          <NavItem id="delivery" icon={<Bike />} label="Delivery" currentView={currentView} onClick={() => { setCurrentView('delivery'); setSelectedTable(null); setSelectedDelivery(null); }} />
+          <NavItem id="kitchen" icon={<ChefHat />} label="Brasa" currentView={currentView} onClick={() => { setCurrentView('kitchen'); setSelectedTable(null); setSelectedDelivery(null); }} />
+          <NavItem id="reports" icon={<BarChart3 />} label="Caixa" currentView={currentView} onClick={() => { setCurrentView('reports'); setSelectedTable(null); setSelectedDelivery(null); }} />
         </div>
       )}
-
       {isSelectingTableForQuickOrder && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-end animate-in fade-in duration-300">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-end">
             <div className="bg-white w-full max-w-md mx-auto rounded-t-[50px] p-10 pb-16 shadow-2xl border-t border-slate-100">
-              <div className="flex justify-between items-center mb-10"><h3 className="text-2xl font-black uppercase tracking-tighter italic text-slate-900">Qual a Mesa?</h3><button onClick={() => setIsSelectingTableForQuickOrder(false)} className="bg-slate-100 p-3 rounded-full active:scale-90 transition-transform"><X className="w-5 h-5 text-slate-500 hover:text-slate-700" /></button></div>
+              <div className="flex justify-between items-center mb-10"><h3 className="text-2xl font-black uppercase italic text-slate-900">Qual a Mesa?</h3><button onClick={() => setIsSelectingTableForQuickOrder(false)} className="bg-slate-100 p-3 rounded-full"><X className="w-5 h-5 text-slate-500" /></button></div>
               <div className="grid grid-cols-5 gap-4">
-                {tables.map(t => (<button key={t.id} onClick={() => finalizeOrderOnTable(t, null)} className={`aspect-square rounded-[24px] border border-slate-100 flex flex-col items-center justify-center transition-all active:scale-90 shadow-sm ${t.status === 'free' ? 'bg-slate-50 text-emerald-600 hover:border-emerald-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}><span className="font-black text-xl">{t.number}</span><span className="text-[7px] font-black uppercase tracking-tighter opacity-70">{t.status === 'free' ? 'Livre' : 'Ocupada'}</span></button>))}
+                {tables.map(t => (<button key={t.id} onClick={() => { finalizeOrderOnTable(t, null); setIsSelectingTableForQuickOrder(false); }} className={`aspect-square rounded-[24px] border border-slate-100 flex flex-col items-center justify-center transition-all ${t.status === 'free' ? 'bg-slate-50 text-emerald-600' : 'bg-orange-50 text-orange-600 border-orange-200'}`}><span className="font-black text-xl">{t.number}</span></button>))}
               </div>
             </div>
           </div>
